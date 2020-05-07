@@ -27,6 +27,11 @@
 #include <sound/audio_cal_utils.h>
 #include "q6voice.h"
 
+#ifdef CONFIG_WAKE_GESTURES
+#include <linux/wake_gestures.h>
+static bool CheckCallStatus;
+#endif
+
 #define TIMEOUT_MS 300
 
 
@@ -111,6 +116,13 @@ static int voice_send_get_sound_focus_cmd(struct voice_data *v,
 				struct sound_focus_param *soundFocusData);
 static int voice_send_get_source_tracking_cmd(struct voice_data *v,
 			struct source_tracking_param *sourceTrackingData);
+
+#ifdef CONFIG_WAKE_GESTURES
+bool IsOnCall(void)
+{
+	return CheckCallStatus;
+}
+#endif
 
 static void voice_itr_init(struct voice_session_itr *itr,
 			   u32 session_id)
@@ -3089,6 +3101,13 @@ static int remap_cal_data(struct cal_block_data *cal_block,
 	int ret = 0;
 	pr_debug("%s\n", __func__);
 
+	if (cal_block->map_data.ion_client == NULL) {
+		pr_err("%s: No ION allocation for session_id %d!\n",
+			__func__, session_id);
+		ret = -EINVAL;
+		goto done;
+	}
+
 	if ((cal_block->map_data.map_size > 0) &&
 		(cal_block->map_data.q6map_handle == 0)) {
 
@@ -5306,6 +5325,9 @@ int voc_end_voice_call(uint32_t session_id)
 	if (common.ec_ref_ext)
 		voc_set_ext_ec_ref(AFE_PORT_INVALID, false);
 
+#ifdef CONFIG_WAKE_GESTURES
+	CheckCallStatus = false;
+#endif
 	mutex_unlock(&v->lock);
 	return ret;
 }
@@ -5624,6 +5646,11 @@ int voc_start_voice_call(uint32_t session_id)
 		ret = -EINVAL;
 		goto fail;
 	}
+
+#ifdef CONFIG_WAKE_GESTURES
+	CheckCallStatus = true;
+#endif
+
 fail:
 	mutex_unlock(&v->lock);
 	return ret;

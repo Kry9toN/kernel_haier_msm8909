@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2015, 2018 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -249,6 +249,8 @@ extern int devmgr_client_request_mitigation(struct device_clnt_data *clnt,
 extern void devmgr_unregister_mitigation_client(
 					struct device *dev,
 					struct device_clnt_data *clnt);
+extern int msm_thermal_get_cluster_voltage_plan(uint32_t cluster,
+	uint32_t *table_ptr);
 #else
 static inline int msm_thermal_init(struct msm_thermal_data *pdata)
 {
@@ -264,17 +266,17 @@ static inline int msm_thermal_set_frequency(uint32_t cpu, uint32_t freq,
 	return -ENOSYS;
 }
 static inline int msm_thermal_set_cluster_freq(uint32_t cluster, uint32_t freq,
-	bool is_max);
+	bool is_max)
 {
 	return -ENOSYS;
 }
 static inline int msm_thermal_get_freq_plan_size(uint32_t cluster,
-	unsigned int *table_len);
+	unsigned int *table_len)
 {
 	return -ENOSYS;
 }
 static inline int msm_thermal_get_cluster_freq_plan(uint32_t cluster,
-	unsigned int *table_ptr);
+	unsigned int *table_ptr)
 {
 	return -ENOSYS;
 }
@@ -320,6 +322,7 @@ static inline void devmgr_unregister_mitigation_client(
 					struct device_clnt_data *clnt)
 {
 }
+
 #endif
 
 #endif /*__MSM_THERMAL_H*/
